@@ -50,13 +50,26 @@ const MONTHS_PL = [
 ];
 const DAY_NAMES = ['Pn','Wt','Śr','Cz','Pt','So','Nd'];
 
-let currentYear  = 2026;
-let currentMonth = 4; // 0-based, May
+const now = new Date();
+let currentYear  = now.getFullYear();
+let currentMonth = now.getMonth();
 let selectedDate = null;
 let selectedSlot = null;
+let selectedLocationKey = null;
 
-// Days that have NO availability (demo)
-const unavailableDays = new Set([1, 5, 12, 19, 26, 6, 13, 20, 27]);
+// Ziębice runs weekdays, Wrocław runs weekends — mirrors lib/booking.js on the server.
+const BOOKING_LOCATIONS = {
+  ziebice: { name: 'Ziębice', address: 'ul. Przykładowa 1, Ziębice', allowedDays: [1, 2, 3, 4, 5] },
+  wroclaw: { name: 'Wrocław', address: 'ul. Przykładowa 2, Wrocław', allowedDays: [0, 6] },
+};
+
+function locationKeyForDay(dayOfWeek) {
+  return Object.keys(BOOKING_LOCATIONS).find(key => BOOKING_LOCATIONS[key].allowedDays.includes(dayOfWeek)) || null;
+}
+
+function dateStr(y, m, d) {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
 
 function renderCalendar() {
   const grid      = document.getElementById('calGrid');
@@ -87,10 +100,7 @@ function renderCalendar() {
   for (let d = 1; d <= daysInMonth; d++) {
     const cell    = document.createElement('div');
     const thisDay = new Date(currentYear, currentMonth, d);
-    const dayOfWeek = thisDay.getDay(); // 0=Sun,6=Sat
     const isPast = thisDay < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const isUnavailable = unavailableDays.has(d);
 
     cell.textContent = d;
     let cls = 'cal-cell';
@@ -98,8 +108,8 @@ function renderCalendar() {
     if (d === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
       cls += ' today';
     }
-    if (isPast || isWeekend || isUnavailable) {
-      cls += isPast ? ' past' : ' unavailable';
+    if (isPast) {
+      cls += ' past';
     } else {
       cls += ' available';
       cell.addEventListener('click', () => selectDate(d));
@@ -112,20 +122,59 @@ function renderCalendar() {
   }
 }
 
+function resetBookingPanels() {
+  document.getElementById('timeSlots').innerHTML = '<p class="slots-hint">Wybierz datę, aby zobaczyć dostępne godziny</p>';
+  document.getElementById('bookingForm').style.display = 'none';
+  document.getElementById('bookingLocation').style.display = 'none';
+  document.getElementById('bookingSuccess').style.display = 'none';
+}
+
 function selectDate(d) {
   selectedDate = { d, m: currentMonth, y: currentYear };
   selectedSlot = null;
   renderCalendar();
-  renderTimeSlots(d);
+  loadTimeSlots(d);
 }
 
-function renderTimeSlots(day) {
+async function loadTimeSlots(day) {
   const container = document.getElementById('timeSlots');
-  const form      = document.getElementById('bookingForm');
+  const form       = document.getElementById('bookingForm');
+  const locationBox = document.getElementById('bookingLocation');
+  document.getElementById('bookingSuccess').style.display = 'none';
+  form.style.display = 'none';
 
-  // Sample slots; in production these come from your booking backend
-  const allSlots = ['09:00','10:00','11:00','12:00','14:00','15:00','16:00','17:00'];
-  const takenSlots = new Set(day % 2 === 0 ? ['10:00','14:00'] : ['11:00','16:00']);
+  const dow = new Date(currentYear, currentMonth, day).getDay();
+  selectedLocationKey = locationKeyForDay(dow);
+  const loc = BOOKING_LOCATIONS[selectedLocationKey];
+
+  locationBox.style.display = 'flex';
+  locationBox.textContent = `📍 ${loc.name} — ${loc.address}`;
+
+  container.innerHTML = `
+    <p style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);margin-bottom:10px;">
+      Dostępne godziny – ${MONTHS_PL[currentMonth].slice(0,3)} ${day}
+    </p>
+    <p class="slots-hint">Sprawdzanie dostępności…</p>
+  `;
+
+  const d = dateStr(currentYear, currentMonth, day);
+
+  try {
+    const response = await fetch(`/api/booking-availability?location=${selectedLocationKey}&date=${d}`);
+    let data = null;
+    try { data = await response.json(); } catch (parseErr) { data = null; }
+    if (!response.ok || !data) {
+      throw new Error((data && data.error) || 'Nie udało się połączyć z systemem rezerwacji. Spróbuj ponownie.');
+    }
+    renderSlotGrid(day, data.slots, new Set(data.taken));
+  } catch (err) {
+    container.innerHTML = `<p class="slots-hint">${err.message}</p>`;
+  }
+}
+
+function renderSlotGrid(day, allSlots, takenSlots) {
+  const container = document.getElementById('timeSlots');
+  const form       = document.getElementById('bookingForm');
 
   container.innerHTML = `
     <p style="font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);margin-bottom:10px;">
@@ -143,6 +192,7 @@ function renderTimeSlots(day) {
       document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
       selectedSlot = slot;
+      document.getElementById('bookingError').style.display = 'none';
       form.style.display = 'flex';
       form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
@@ -157,30 +207,89 @@ document.querySelector('.cal-nav:first-child').addEventListener('click', () => {
   else currentMonth--;
   selectedDate = null; selectedSlot = null;
   renderCalendar();
-  document.getElementById('timeSlots').innerHTML = '<p class="slots-hint">Wybierz datę, aby zobaczyć dostępne godziny</p>';
-  document.getElementById('bookingForm').style.display = 'none';
+  resetBookingPanels();
 });
 document.querySelector('.cal-nav:last-child').addEventListener('click', () => {
   if (currentMonth === 11) { currentMonth = 0; currentYear++; }
   else currentMonth++;
   selectedDate = null; selectedSlot = null;
   renderCalendar();
-  document.getElementById('timeSlots').innerHTML = '<p class="slots-hint">Wybierz datę, aby zobaczyć dostępne godziny</p>';
-  document.getElementById('bookingForm').style.display = 'none';
+  resetBookingPanels();
 });
 
 // Confirm booking button
-document.getElementById('confirmBtn').addEventListener('click', () => {
-  const inputs = document.querySelectorAll('.booking-form input, .booking-form select');
-  let valid = true;
-  inputs.forEach(i => { if (!i.value.trim()) valid = false; });
-  if (!valid) { alert('Proszę wypełnić wszystkie wymagane pola.'); return; }
+document.getElementById('confirmBtn').addEventListener('click', async () => {
+  const errorEl = document.getElementById('bookingError');
+  errorEl.style.display = 'none';
+
+  const name = document.getElementById('bfName').value.trim();
+  const email = document.getElementById('bfEmail').value.trim();
+  const phone = document.getElementById('bfPhone').value.trim();
+  const service = document.getElementById('bfService').value;
+  const notes = document.getElementById('bfNotes').value.trim();
+
+  if (!name || !email || !phone || !service) {
+    errorEl.textContent = 'Proszę wypełnić wszystkie wymagane pola.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  if (!selectedDate || !selectedSlot || !selectedLocationKey) {
+    errorEl.textContent = 'Wybierz datę i godzinę.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const confirmBtn = document.getElementById('confirmBtn');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Rezerwowanie…';
+
   const d = selectedDate;
-  alert(`✅ Rezerwacja potwierdzona!\n\n${DAY_NAMES[(new Date(d.y, d.m, d.d).getDay()+6)%7]}, ${d.d} ${MONTHS_PL[d.m]} ${d.y} o ${selectedSlot}\n\nPotwierdzenie zostanie wysłane na podany adres e-mail.`);
-  document.getElementById('bookingForm').style.display = 'none';
-  selectedDate = null; selectedSlot = null;
-  renderCalendar();
-  document.getElementById('timeSlots').innerHTML = '<p class="slots-hint">Wybierz datę, aby zobaczyć dostępne godziny</p>';
+  let response;
+
+  try {
+    response = await fetch('/api/create-booking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: selectedLocationKey,
+        date: dateStr(d.y, d.m, d.d),
+        time: selectedSlot,
+        service,
+        customer: { name, email, phone },
+        notes,
+      }),
+    });
+
+    let data = null;
+    try { data = await response.json(); } catch (parseErr) { data = null; }
+    if (!response.ok || !data) throw new Error((data && data.error) || 'Nie udało się zapisać rezerwacji. Spróbuj ponownie.');
+
+    const loc = BOOKING_LOCATIONS[selectedLocationKey];
+    const successEl = document.getElementById('bookingSuccess');
+    successEl.innerHTML = `
+      <h4>✅ Rezerwacja potwierdzona</h4>
+      <p>${DAY_NAMES[(new Date(d.y, d.m, d.d).getDay() + 6) % 7]}, ${d.d} ${MONTHS_PL[d.m]} ${d.y} o ${selectedSlot}</p>
+      <p>${loc.name} — ${loc.address}</p>
+      <p>Numer rezerwacji: ${data.bookingId}</p>
+      <p>Potwierdzenie zostało wysłane na ${email}.</p>
+    `;
+    successEl.style.display = 'block';
+    document.getElementById('bookingForm').style.display = 'none';
+    document.getElementById('bookingLocation').style.display = 'none';
+    document.getElementById('timeSlots').innerHTML = '';
+    selectedDate = null; selectedSlot = null;
+    renderCalendar();
+  } catch (err) {
+    errorEl.textContent = err.message;
+    errorEl.style.display = 'block';
+    // Someone may have just taken this slot — refresh availability.
+    if (response && response.status === 409 && selectedDate) {
+      loadTimeSlots(selectedDate.d);
+    }
+  } finally {
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Zarezerwuj termin';
+  }
 });
 
 // Init calendar
@@ -288,3 +397,141 @@ document.addEventListener('animationiteration', () => {}, { passive: true });
 const style = document.createElement('style');
 style.textContent = `.revealed { opacity: 1 !important; transform: translateY(0) !important; }`;
 document.head.appendChild(style);
+
+// ── CHECKOUT ─────────────────────────────
+// Free public token from https://manager.paczkomaty.pl/ → Moje konto → API → Geowidget
+const INPOST_GEOWIDGET_TOKEN = 'YOUR_INPOST_GEOWIDGET_TOKEN';
+
+const FREE_SHIPPING_FROM = 150; // zł
+const SHIPPING_FEE = 13.99; // zł
+
+let selectedLocker = null;
+let geowidgetLoaded = false;
+
+function openCheckout() {
+  if (cart.length === 0) {
+    alert('Twój koszyk jest pusty.');
+    return;
+  }
+  toggleCart();
+  renderCheckoutSummary();
+  document.getElementById('checkoutOverlay').classList.add('open');
+  document.getElementById('checkoutModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCheckout() {
+  document.getElementById('checkoutOverlay').classList.remove('open');
+  document.getElementById('checkoutModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function cartTotals() {
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const shipping = subtotal >= FREE_SHIPPING_FROM ? 0 : SHIPPING_FEE;
+  return { subtotal, shipping, total: subtotal + shipping };
+}
+
+function renderCheckoutSummary() {
+  const { subtotal, shipping, total } = cartTotals();
+  const box = document.getElementById('checkoutSummary');
+  const itemsHtml = cart.map(i => `
+    <div class="row"><span>${i.name} x${i.qty}</span><span>${i.price * i.qty} zł</span></div>
+  `).join('');
+  box.innerHTML = `
+    ${itemsHtml}
+    <div class="row"><span>Dostawa (InPost Paczkomat)</span><span>${shipping === 0 ? 'Darmowa' : shipping.toFixed(2) + ' zł'}</span></div>
+    <div class="row total"><span>Razem</span><span>${total.toFixed(2)} zł</span></div>
+  `;
+}
+
+function openLockerPicker() {
+  if (!geowidgetLoaded) {
+    const container = document.getElementById('geowidgetContainer');
+    const widget = document.createElement('inpost-geowidget');
+    widget.setAttribute('token', INPOST_GEOWIDGET_TOKEN);
+    widget.setAttribute('language', 'pl');
+    widget.setAttribute('config', 'parcelCollect');
+    widget.setAttribute('onpoint', 'onInpostPointSelected');
+    container.appendChild(widget);
+    geowidgetLoaded = true;
+  }
+  document.getElementById('lockerOverlay').classList.add('open');
+  document.getElementById('lockerModal').classList.add('open');
+}
+
+function closeLockerPicker() {
+  document.getElementById('lockerOverlay').classList.remove('open');
+  document.getElementById('lockerModal').classList.remove('open');
+}
+
+function onInpostPointSelected(point) {
+  const address = point.address_details
+    ? `${point.address_details.street || ''} ${point.address_details.building_number || ''}, ${point.address_details.city || ''}`.trim()
+    : (point.address && (point.address.line1 || '') + ' ' + (point.address.line2 || '')).trim();
+
+  selectedLocker = { name: point.name, address };
+
+  const el = document.getElementById('lockerSelected');
+  el.textContent = `📦 ${selectedLocker.name}${address ? ' — ' + address : ''}`;
+  el.classList.add('set');
+
+  closeLockerPicker();
+}
+
+async function startPayment() {
+  const name = document.getElementById('coName').value.trim();
+  const email = document.getElementById('coEmail').value.trim();
+  const phone = document.getElementById('coPhone').value.trim();
+  const errorEl = document.getElementById('checkoutError');
+  errorEl.style.display = 'none';
+
+  if (!name || !email || !phone) {
+    errorEl.textContent = 'Wypełnij dane kontaktowe.';
+    errorEl.style.display = 'block';
+    return;
+  }
+  if (!selectedLocker) {
+    errorEl.textContent = 'Wybierz paczkomat InPost.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const payBtn = document.getElementById('payBtn');
+  payBtn.disabled = true;
+  payBtn.textContent = 'Przekierowanie do płatności…';
+
+  try {
+    const response = await fetch('/api/create-transaction', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty })),
+        customer: { name, email, phone },
+        locker: selectedLocker,
+      }),
+    });
+
+    let data = null;
+    try { data = await response.json(); } catch (parseErr) { data = null; }
+
+    if (!response.ok || !data) {
+      throw new Error((data && data.error) || 'Nie udało się rozpocząć płatności. Spróbuj ponownie.');
+    }
+
+    const { subtotal, shipping, total } = cartTotals();
+    localStorage.setItem('odnowina_last_order', JSON.stringify({
+      sessionId: data.sessionId,
+      items: cart,
+      subtotal, shipping, total,
+      locker: selectedLocker,
+    }));
+
+    window.location.href = data.redirectUrl;
+  } catch (err) {
+    errorEl.textContent = err.message || 'Wystąpił błąd. Spróbuj ponownie.';
+    errorEl.style.display = 'block';
+    payBtn.disabled = false;
+    payBtn.textContent = 'Zapłać kartą — Przelewy24 →';
+  }
+}

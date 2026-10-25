@@ -6,6 +6,9 @@
   <title>Odnowina – Shiatsu & Kosmetyki Ekologiczne</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <!-- InPost Geowidget — paczkomat picker. Get a free public token at https://manager.paczkomaty.pl/ → Moje konto → API → Geowidget -->
+  <link href="https://geowidget.inpost.pl/inpost-geowidget.css" rel="stylesheet" />
+  <script defer src="https://geowidget.inpost.pl/inpost-geowidget.js"></script>
 </head>
 <body>
 
@@ -38,7 +41,7 @@
     <div class="hero-content">
       <p class="hero-eyebrow">Shiatsu · Masaż · Kosmetyki</p>
       <h1>Przestrzeń <em>odnowy</em></h1>
-      <p class="hero-sub">Holistyczne podejście do ciała i skóry — w zgodzie z naturą.</p>
+      <p class="hero-sub">Holistyczne podejście do ciała i skóry w zgodzie z naturą.</p>
       <div class="hero-btns">
         <a href="#rezerwacja" class="btn btn-primary">Umów wizytę</a>
         <a href="#masaz" class="btn btn-ghost">Dowiedz się więcej</a>
@@ -72,12 +75,11 @@
       <h2 class="center">Zobacz jak pracujemy</h2>
       <p class="section-desc center">Shiatsu to sztuka pracy z meridianami i energią ciała. Każda sesja jest wyjątkowa i dostosowana do potrzeb klienta.</p>
 
-      <!-- Replace the YouTube URL below with your real video link -->
       <div class="video-single">
         <div class="video-single-frame">
-          <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?controls=1&rel=0&modestbranding=1" title="Masaż Shiatsu – Odnowina" frameborder="0" allowfullscreen loading="lazy"></iframe>
+          <video src="static/masaz-shiatsu.mp4" title="Masaż Shiatsu – Odnowina" controls playsinline preload="metadata"></video>
         </div>
-        <p class="video-caption">Sesja masażu Shiatsu — poczuj różnicę</p>
+        <p class="video-caption">Sesja masażu Shiatsu</p>
       </div>
     </div>
   </section>
@@ -146,26 +148,28 @@
             <button class="cal-nav">›</button>
           </div>
           <div class="cal-grid" id="calGrid"></div>
+          <div class="booking-location" id="bookingLocation" style="display:none;"></div>
           <div class="time-slots" id="timeSlots">
             <p class="slots-hint">Wybierz datę, aby zobaczyć dostępne godziny</p>
           </div>
           <div class="booking-form" id="bookingForm" style="display:none;">
             <h4>Twoje dane</h4>
-            <input type="text" placeholder="Imię i nazwisko" />
-            <input type="email" placeholder="E-mail" />
-            <input type="tel" placeholder="Telefon" />
-            <select>
+            <input type="text" id="bfName" placeholder="Imię i nazwisko" />
+            <input type="email" id="bfEmail" placeholder="E-mail" />
+            <input type="tel" id="bfPhone" placeholder="Telefon" />
+            <select id="bfService">
               <option value="">Wybierz zabieg</option>
               <option>Shiatsu – 60 min (180 zł)</option>
               <option>Shiatsu – 90 min (250 zł)</option>
               <option>Masaż relaksacyjny – 60 min (170 zł)</option>
             </select>
-            <textarea placeholder="Uwagi (opcjonalnie)"></textarea>
+            <textarea id="bfNotes" placeholder="Uwagi (opcjonalnie)"></textarea>
+            <p class="booking-error" id="bookingError" style="display:none;"></p>
             <button class="btn btn-primary full-width" id="confirmBtn">Zarezerwuj termin</button>
           </div>
+          <div class="booking-success" id="bookingSuccess" style="display:none;"></div>
         </div>
       </div>
-      </div><!-- /panelCalendar -->
     </div>
   </section>
 
@@ -297,7 +301,7 @@
   <!-- ─── INPOST BADGE ─── -->
   <div class="inpost-bar">
     <div class="container inpost-inner">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/InPost_logo.svg/320px-InPost_logo.svg.png" alt="InPost" class="inpost-logo" />
+      <img src="static/InPost_logotype_2024_black_bg.svg" alt="InPost" class="inpost-logo" />
       <span>Bezpłatna dostawa przy zamówieniu powyżej 150 zł &nbsp;·&nbsp; Paczkomat 24/7</span>
     </div>
   </div>
@@ -307,15 +311,14 @@
     <div class="container two-col">
       <div class="text-block">
         <span class="label">Kontakt</span>
-        <h2>Znajdź nas</h2>
-        <p><strong>Odnowina</strong><br />ul. Przykładowa 12<br />Warszawa, 00-001</p>
+        <p><br />ul. Odnowina 12<br />Odnowina, 00-001</p>
         <p>📞 <a href="tel:+48000000000">+48 000 000 000</a></p>
         <p>✉️ <a href="mailto:hello@odnowina.pl">hello@odnowina.pl</a></p>
         <div class="social-links">
-          <a href="#" aria-label="Instagram">
+          <a href="https://www.instagram.com/odnowina/" aria-label="Instagram">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
           </a>
-          <a href="#" aria-label="Facebook">
+          <a href="https://www.facebook.com/odnowina" aria-label="Facebook">
             <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
           </a>
         </div>
@@ -385,8 +388,53 @@
     </div>
     <div class="cart-footer" id="cartFooter" style="display:none;">
       <div class="cart-total">Razem: <strong id="cartTotal">0 zł</strong></div>
-      <a href="#" class="btn btn-primary full-width">Przejdź do kasy →</a>
+      <button class="btn btn-primary full-width" onclick="openCheckout()">Przejdź do kasy →</button>
     </div>
+  </div>
+
+  <!-- ─── CHECKOUT MODAL ─── -->
+  <div class="checkout-overlay" id="checkoutOverlay" onclick="closeCheckout()"></div>
+  <div class="checkout-modal" id="checkoutModal">
+    <div class="checkout-header">
+      <h3>Dokończ zamówienie</h3>
+      <button onclick="closeCheckout()" aria-label="Zamknij">✕</button>
+    </div>
+    <div class="checkout-body">
+      <div class="checkout-section">
+        <h4>Dane kontaktowe</h4>
+        <input type="text" id="coName" placeholder="Imię i nazwisko" required />
+        <input type="email" id="coEmail" placeholder="E-mail" required />
+        <input type="tel" id="coPhone" placeholder="Telefon" required />
+      </div>
+
+      <div class="checkout-section">
+        <h4>Dostawa — InPost Paczkomat</h4>
+        <div class="locker-picker">
+          <div class="locker-selected" id="lockerSelected">Nie wybrano paczkomatu</div>
+          <button type="button" class="btn btn-outline" onclick="openLockerPicker()">📍 Wybierz paczkomat</button>
+        </div>
+      </div>
+
+      <div class="checkout-section">
+        <h4>Podsumowanie</h4>
+        <div id="checkoutSummary" class="checkout-summary"></div>
+      </div>
+
+      <p class="checkout-error" id="checkoutError" style="display:none;"></p>
+
+      <button class="btn btn-primary full-width" id="payBtn" onclick="startPayment()">Zapłać kartą — Przelewy24 →</button>
+      <p class="checkout-note">Płatność realizowana bezpiecznie przez Przelewy24. Zostaniesz przekierowany do formularza płatności kartą.</p>
+    </div>
+  </div>
+
+  <!-- ─── INPOST LOCKER PICKER MODAL ─── -->
+  <div class="locker-overlay" id="lockerOverlay" onclick="closeLockerPicker()"></div>
+  <div class="locker-modal" id="lockerModal">
+    <div class="checkout-header">
+      <h3>Wybierz paczkomat InPost</h3>
+      <button onclick="closeLockerPicker()" aria-label="Zamknij">✕</button>
+    </div>
+    <div class="locker-modal-body" id="geowidgetContainer"></div>
   </div>
 
   <!-- Cart button -->
