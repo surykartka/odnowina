@@ -1,5 +1,10 @@
-// Vercel serverless function — registers a card payment transaction with Przelewy24.
-// Required env vars: P24_MERCHANT_ID, P24_POS_ID (defaults to P24_MERCHANT_ID), P24_API_KEY, P24_CRC, P24_SANDBOX, SITE_URL
+// Vercel serverless function — registers a card payment transaction with HotPay
+// (Przelewy, "advanced API with validation", TYP=INIT — see dokumentacja.hotpay.pl).
+// Required env vars: HOTPAY_SEKRET, HOTPAY_PASSWORD, SITE_URL
+//
+// The notification URL below (SITE_URL + /api/hotpay-webhook) must also be
+// pasted into the HotPay panel for this service — unlike Przelewy24, HotPay
+// does not accept urlStatus per-request.
 
 const crypto = require('crypto');
 const { createOrder } = require('../lib/orders');
@@ -7,14 +12,13 @@ const { createOrder } = require('../lib/orders');
 const SHIPPING_FEE_GR = 1399; // 13.99 zł paczkomat, in groszy
 const FREE_SHIPPING_FROM_GR = 15000; // 150 zł
 
-function p24BaseUrl() {
-  return process.env.P24_SANDBOX === 'true'
-    ? 'https://sandbox.przelewy24.pl'
-    : 'https://secure.przelewy24.pl';
-}
+const HOTPAY_URL = 'https://platnosc.hotpay.pl/';
 
-function sign(fields) {
-  return crypto.createHash('sha384').update(JSON.stringify(fields)).digest('hex');
+function sign(password, amountZl, serviceName, returnUrl, orderId, secret) {
+  return crypto
+    .createHash('sha256')
+    .update(`${password};${amountZl};${serviceName};${returnUrl};${orderId};${secret}`)
+    .digest('hex');
 }
 
 module.exports = async (req, res) => {
@@ -51,54 +55,36 @@ module.exports = async (req, res) => {
     const shippingGr = subtotalGr >= FREE_SHIPPING_FROM_GR ? 0 : SHIPPING_FEE_GR;
     const amountGr = subtotalGr + shippingGr;
 
-    const merchantId = Number(process.env.P24_MERCHANT_ID);
-    const posId = Number(process.env.P24_POS_ID || process.env.P24_MERCHANT_ID);
-    const apiKey = process.env.P24_API_KEY;
-    const crc = process.env.P24_CRC;
+    const sekret = process.env.HOTPAY_SEKRET;
+    const password = process.env.HOTPAY_PASSWORD;
     const siteUrl = process.env.SITE_URL;
 
-    if (!merchantId || !apiKey || !crc || !siteUrl) {
-      res.status(500).json({ error: 'Płatności nie są jeszcze skonfigurowane na serwerze (brak zmiennych środowiskowych Przelewy24). Patrz SETUP.md.' });
+    if (!sekret || !password || !siteUrl) {
+      res.status(500).json({ error: 'Płatności nie są jeszcze skonfigurowane na serwerze (brak zmiennych środowiskowych HotPay). Patrz SETUP.md.' });
       return;
     }
 
     const sessionId = `odnowina_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-
-    const registerSign = sign({ sessionId, merchantId, amount: amountGr, currency: 'PLN', crc });
-
     const lockerLabel = `${locker.name}${locker.address ? ' – ' + locker.address : ''}`;
+    const serviceName = `Zamówienie Odnowina (${items.reduce((n, i) => n + i.qty, 0)} szt.) – odbiór: ${lockerLabel}`;
+    const returnUrl = `${siteUrl}/platnosc-potwierdzenie.html?sessionId=${encodeURIComponent(sessionId)}`;
+    const amountZl = (amountGr / 100).toFixed(2);
 
-    const payload = {
-      merchantId,
-      posId,
-      sessionId,
-      amount: amountGr,
-      currency: 'PLN',
-      description: `Zamówienie Odnowina (${items.reduce((n, i) => n + i.qty, 0)} szt.) – odbiór: ${lockerLabel}`,
-      email: customer.email,
-      client: customer.name,
-      phone: (customer.phone || '').replace(/\s+/g, ''),
-      country: 'PL',
-      language: 'pl',
-      urlReturn: `${siteUrl}/platnosc-potwierdzenie.html?sessionId=${encodeURIComponent(sessionId)}`,
-      urlStatus: `${siteUrl}/api/p24-webhook`,
-      shipping: shippingGr,
-      sign: registerSign,
-    };
+    const form = new FormData();
+    form.append('SEKRET', sekret);
+    form.append('KWOTA', amountZl);
+    form.append('NAZWA_USLUGI', serviceName);
+    form.append('ADRES_WWW', returnUrl);
+    form.append('ID_ZAMOWIENIA', sessionId);
+    form.append('TYP', 'INIT');
+    form.append('EMAIL', customer.email);
+    form.append('HASH', sign(password, amountZl, serviceName, returnUrl, sessionId, sekret));
 
-    const response = await fetch(`${p24BaseUrl()}/api/v1/transaction/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Basic ' + Buffer.from(`${posId}:${apiKey}`).toString('base64'),
-      },
-      body: JSON.stringify(payload),
-    });
-
+    const response = await fetch(HOTPAY_URL, { method: 'POST', body: form });
     const data = await response.json();
 
-    if (!response.ok || data.responseCode !== 0 || !data.data || !data.data.token) {
-      res.status(502).json({ error: 'Rejestracja transakcji w Przelewy24 nie powiodła się.', details: data });
+    if (!response.ok || !data.STATUS || !data.URL) {
+      res.status(502).json({ error: 'Rejestracja transakcji w HotPay nie powiodła się.', details: data });
       return;
     }
 
@@ -117,7 +103,7 @@ module.exports = async (req, res) => {
     res.status(200).json({
       sessionId,
       amountGr,
-      redirectUrl: `${p24BaseUrl()}/trnRequest/${data.data.token}`,
+      redirectUrl: data.URL,
     });
   } catch (err) {
     res.status(400).json({ error: err.message || 'Nieznany błąd przy rejestracji płatności.' });
