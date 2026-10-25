@@ -400,13 +400,23 @@ document.head.appendChild(style);
 
 // ── CHECKOUT ─────────────────────────────
 // Free public token from https://manager.paczkomaty.pl/ → Moje konto → API → Geowidget
-const INPOST_GEOWIDGET_TOKEN = 'YOUR_INPOST_GEOWIDGET_TOKEN';
+// Set as the INPOST_GEOWIDGET_TOKEN env var in Vercel; served via /api/config.
+let inpostGeowidgetToken = null;
 
 const FREE_SHIPPING_FROM = 150; // zł
 const SHIPPING_FEE = 13.99; // zł
 
 let selectedLocker = null;
 let geowidgetLoaded = false;
+
+async function getInpostGeowidgetToken() {
+  if (inpostGeowidgetToken === null) {
+    const response = await fetch('/api/config');
+    const data = await response.json();
+    inpostGeowidgetToken = data.inpostGeowidgetToken || '';
+  }
+  return inpostGeowidgetToken;
+}
 
 function openCheckout() {
   if (cart.length === 0) {
@@ -445,11 +455,12 @@ function renderCheckoutSummary() {
   `;
 }
 
-function openLockerPicker() {
+async function openLockerPicker() {
   if (!geowidgetLoaded) {
+    const token = await getInpostGeowidgetToken();
     const container = document.getElementById('geowidgetContainer');
     const widget = document.createElement('inpost-geowidget');
-    widget.setAttribute('token', INPOST_GEOWIDGET_TOKEN);
+    widget.setAttribute('token', token);
     widget.setAttribute('language', 'pl');
     widget.setAttribute('config', 'parcelCollect');
     widget.setAttribute('onpoint', 'onInpostPointSelected');
@@ -532,6 +543,6 @@ async function startPayment() {
     errorEl.textContent = err.message || 'Wystąpił błąd. Spróbuj ponownie.';
     errorEl.style.display = 'block';
     payBtn.disabled = false;
-    payBtn.textContent = 'Zapłać kartą — Przelewy24 →';
+    payBtn.textContent = 'Zapłać kartą — HotPay →';
   }
 }

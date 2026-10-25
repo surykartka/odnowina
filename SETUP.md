@@ -1,27 +1,36 @@
 # Sklep i rezerwacje — konfiguracja
 
 Ten projekt jest statyczną stroną (HTML/CSS/JS) + funkcjami serverless w `/api`
-(Node — Przelewy24, InPost, oraz rezerwacje wizyt). Wymaga wdrożenia na Vercel,
+(Node — HotPay, InPost, oraz rezerwacje wizyt). Wymaga wdrożenia na Vercel,
 które automatycznie wykryje `/api` jako Serverless Functions.
 
-## 1. Przelewy24 (płatność kartą)
+## 1. HotPay (płatność kartą)
 
-1. Załóż konto na [przelewy24.pl](https://www.przelewy24.pl/) (do testów: panel sandbox na `sandbox.przelewy24.pl`).
-2. W panelu P24 znajdź: **Merchant ID**, **POS ID** (zwykle = Merchant ID), **Klucz API/raportowy** (`P24_API_KEY`) oraz **CRC** sklepu (`P24_CRC`).
-3. W Vercel → Project Settings → Environment Variables ustaw (patrz `.env.example`):
-   - `P24_MERCHANT_ID`, `P24_POS_ID`, `P24_API_KEY`, `P24_CRC`
-   - `P24_SANDBOX=true` na start (testy), `false` dla prawdziwych płatności
+1. Załóż konto na [hotpay.pl/rejestracja](https://hotpay.pl/rejestracja/) i aktywuj je przelewem 10 zł (weryfikacja do 24h).
+2. Zarejestruj serwis na [hotpay.pl/przelewy_sklep_nowy](https://hotpay.pl/przelewy_sklep_nowy/) — w panelu znajdziesz **SEKRET** (`HOTPAY_SEKRET`) oraz **hasło** ustawione dla serwisu (`HOTPAY_PASSWORD`).
+3. W ustawieniach serwisu w panelu HotPay wklej **adres URL notyfikacji**:
+   `https://<adres-wdrożonej-strony>/api/hotpay-webhook` — w przeciwieństwie do
+   Przelewy24, HotPay nie przyjmuje tego adresu per-żądanie, trzeba go skonfigurować w panelu.
+4. W Vercel → Project Settings → Environment Variables ustaw (patrz `.env.example`):
+   - `HOTPAY_SEKRET`, `HOTPAY_PASSWORD`
    - `SITE_URL` — adres wdrożonej strony, np. `https://odnowina.vercel.app`
+
+HotPay nie udostępnia środowiska sandbox w dokumentacji — testy płatności
+trzeba robić na realnych (niewielkich) transakcjach lub po konsultacji z
+supportem HotPay. Dokumentacja API: [dokumentacja.hotpay.pl](https://dokumentacja.hotpay.pl/).
 
 ## 2. InPost Geowidget (wybór paczkomatu)
 
 1. Zarejestruj się na [manager.paczkomaty.pl](https://manager.paczkomaty.pl/) (konto darmowe).
 2. Moje konto → API → Geowidget → wygeneruj **publiczny token**.
-3. Wklej token w [app.js](app.js) jako wartość `INPOST_GEOWIDGET_TOKEN`.
+3. W Vercel → Project Settings → Environment Variables ustaw `INPOST_GEOWIDGET_TOKEN`
+   (patrz `.env.example`). Frontend pobiera go przy otwarciu wyboru paczkomatu
+   przez `/api/config` (`api/config.js`) — token jest publiczny, więc nie trzeba
+   go już wklejać do `app.js`.
 
 To daje klientom wybór realnego paczkomatu przy kasie. Samo nadanie przesyłki
 (etykieta) nie jest tu zautomatyzowane — po opłaceniu zamówienia (patrz log w
-Vercel → Functions → `p24-webhook`) nadajesz paczkę ręcznie w panelu InPost,
+Vercel → Functions → `hotpay-webhook`) nadajesz paczkę ręcznie w panelu InPost,
 na adres wybranego paczkomatu.
 
 ## 3. Rezerwacja wizyt (Ziębice / Wrocław)
@@ -50,8 +59,8 @@ Zamówienia ze sklepu (koszyk, dane klienta, paczkomat, status płatności) oraz
 rezerwacje wizyt są trwale zapisywane w tej samej bazie Upstash Redis co w
 punkcie 3 — to w pełni bezserwerowe (REST API, bez własnego procesu bazy
 danych do uruchamiania/utrzymywania). Zamówienie zapisuje się jako `pending`
-przy rejestracji transakcji w Przelewy24 (`api/create-transaction.js`), a
-webhook `p24-webhook` zmienia status na `paid` i wysyła e-maile z
+przy rejestracji transakcji w HotPay (`api/create-transaction.js`), a
+webhook `hotpay-webhook` zmienia status na `paid` i wysyła e-maile z
 potwierdzeniem do klienta i do sklepu (`OWNER_EMAIL`).
 
 ## 5. Panel admina
