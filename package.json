@@ -1,0 +1,10 @@
+{
+  "name": "odnowina",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "busboy": "^1.6.0"
+  }
+}

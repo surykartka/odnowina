@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Odnowina – Shiatsu & Kosmetyki Ekologiczne</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <!-- InPost Geowidget — paczkomat picker. Get a free public token at https://manager.paczkomaty.pl/ → Moje konto → API → Geowidget -->
+  <link href="https://geowidget.inpost.pl/inpost-geowidget.css" rel="stylesheet" />
+  <script defer src="https://geowidget.inpost.pl/inpost-geowidget.js"></script>
+</head>
+<body>
+
+  <!-- ─── NAVIGATION ─── -->
+  <header class="nav-wrapper" id="navbar">
+    <nav class="nav-inner">
+      <a href="#hero" class="logo">odnowina</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#o-nas">O mnie</a></li>
+        <li><a href="#masaz">Masaż</a></li>
+        <li><a href="#nocleg">Nocleg</a></li>
+        <li><a href="#sklep">Sklep</a></li>
+        <li><a href="#rezerwacja" class="nav-cta">Umów wizytę</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- ─── HERO ─── -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <!-- Placeholder video — replace src with real video file -->
+      <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=1600&q=80">
+        <!-- <source src="hero-video.mp4" type="video/mp4" /> -->
+      </video>
+      <div class="hero-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Shiatsu · Masaż · Kosmetyki</p>
+      <h1>Przestrzeń <em>odnowy</em></h1>
+      <p class="hero-sub">Holistyczne podejście do ciała i skóry w zgodzie z naturą.</p>
+      <div class="hero-btns">
+        <a href="#rezerwacja" class="btn btn-primary">Umów wizytę</a>
+        <a href="#masaz" class="btn btn-ghost">Dowiedz się więcej</a>
+      </div>
+    </div>
+    <a href="#o-nas" class="scroll-down" aria-label="Przewiń w dół">
+      <svg width="20" height="30" viewBox="0 0 20 30"><rect x="8" y="0" width="4" height="18" rx="2"/><polyline points="4,15 10,22 16,15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+
+  <!-- ─── O NAS ─── -->
+  <section class="section o-nas" id="o-nas">
+    <div class="container two-col">
+      <div class="text-block">
+        <span class="label">O mnie</span>
+        <h2>Wierzymy, że harmonia zaczyna się od dotyku</h2>
+        <p>Odnowina to miejsce, gdzie tradycja shiatsu spotyka się z siłą natury. Oferujemy masaże przywracające równowagę energetyczną oraz starannie dobrane kosmetyki ekologiczne — dla tych, którzy chcą żyć świadomie.</p>
+        <p>Pracujemy z uważnością, korzystamy tylko z certyfikowanych, naturalnych składników i wierzymy, że prawdziwa odnowa zaczyna się od środka.</p>
+        <a href="#masaz" class="link-arrow">Nasze zabiegi →</a>
+      </div>
+      <div class="img-block">
+        <img src="https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=800&q=80" alt="Masaż shiatsu – zdjęcie poglądowe" loading="lazy" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FILMY / VIDEO SHOWCASE ─── -->
+  <section class="section videos" id="masaz">
+    <div class="container">
+      <span class="label center">Masaż w praktyce</span>
+      <h2 class="center">Zobacz jak pracujemy</h2>
+      <p class="section-desc center">Shiatsu to sztuka pracy z meridianami i energią ciała. Każda sesja jest wyjątkowa i dostosowana do potrzeb klienta.</p>
+
+      <div class="video-single">
+        <div class="video-single-frame">
+          <video src="static/masaz-shiatsu.mp4" title="Masaż Shiatsu – Odnowina" controls playsinline preload="metadata"></video>
+        </div>
+        <p class="video-caption">Sesja masażu Shiatsu</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CENNIK ─── -->
+  <section class="section cennik" id="cennik">
+    <div class="container">
+      <span class="label center">Oferta</span>
+      <h2 class="center">Zabiegi</h2>
+      <div class="price-grid">
+        <div class="price-card">
+          <h3>Shiatsu – 60 min</h3>
+          <p>Klasyczna sesja shiatsu skupiona na meridianach i punktach napięcia. Idealna na start.</p>
+          <div class="price">180 zł</div>
+          <a href="#rezerwacja" class="btn btn-outline">Umów →</a>
+        </div>
+        <div class="price-card featured">
+          <span class="badge">Polecany</span>
+          <h3>Shiatsu – 90 min</h3>
+          <p>Pełna sesja z pracą nad całym ciałem, zakończona masażem twarzy i głowy.</p>
+          <div class="price">250 zł</div>
+          <a href="#rezerwacja" class="btn btn-primary">Umów →</a>
+        </div>
+        <div class="price-card">
+          <h3>Masaż relaksacyjny – 60 min</h3>
+          <p>Głęboki relaks z użyciem ekologicznych olejków. Doskonały przy stresie i napięciach.</p>
+          <div class="price">170 zł</div>
+          <a href="#rezerwacja" class="btn btn-outline">Umów →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── REZERWACJA ─── -->
+  <section class="section rezerwacja" id="rezerwacja">
+    <div class="container">
+      <span class="label center">Rezerwacja</span>
+      <h2 class="center">Umów wizytę online</h2>
+      <p class="section-desc center">Wybierz termin który Ci odpowiada. Otrzymasz potwierdzenie na e-mail i przypomnienie SMS dzień wcześniej.</p>
+
+      <div class="booking-options">
+        <button class="booking-tab active" id="tabCalendar" onclick="switchTab('calendar')">📅 Kalendarz na stronie</button>
+        <button class="booking-tab" id="tabBooksy" onclick="switchTab('booksy')">Rezerwuj przez Booksy</button>
+      </div>
+
+      <!-- Booksy panel — replace href with your real Booksy profile URL -->
+      <div id="panelBooksy" class="booksy-panel" style="display:none;">
+        <div class="booksy-card">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--sage-dark)" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/><circle cx="8" cy="15" r="1.5" fill="var(--sage-dark)" stroke="none"/><circle cx="12" cy="15" r="1.5" fill="var(--sage-dark)" stroke="none"/></svg>
+          <h4>Umów wizytę przez Booksy</h4>
+          <p>Szybka i wygodna rezerwacja online — wybierz termin, zabieg i gotowe. Otrzymasz potwierdzenie i przypomnienie SMS.</p>
+          <a href="https://booksy.com" target="_blank" rel="noopener" class="btn btn-primary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Otwórz Booksy →
+          </a>
+          <p class="airbnb-note" style="margin-top:12px;">Zostaniesz przekierowany na platformę Booksy — rezerwacja jest bezpłatna.</p>
+        </div>
+      </div>
+
+      <!-- In production: swap this calendar mock with the real Booksy/Calendly embed -->
+      <div id="panelCalendar" class="booking-widget">
+        <div class="calendar-mock">
+          <div class="cal-header">
+            <button class="cal-nav">‹</button>
+            <span id="calMonth">Maj 2026</span>
+            <button class="cal-nav">›</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="booking-location" id="bookingLocation" style="display:none;"></div>
+          <div class="time-slots" id="timeSlots">
+            <p class="slots-hint">Wybierz datę, aby zobaczyć dostępne godziny</p>
+          </div>
+          <div class="booking-form" id="bookingForm" style="display:none;">
+            <h4>Twoje dane</h4>
+            <input type="text" id="bfName" placeholder="Imię i nazwisko" />
+            <input type="email" id="bfEmail" placeholder="E-mail" />
+            <input type="tel" id="bfPhone" placeholder="Telefon" />
+            <select id="bfService">
+              <option value="">Wybierz zabieg</option>
+              <option>Shiatsu – 60 min (180 zł)</option>
+              <option>Shiatsu – 90 min (250 zł)</option>
+              <option>Masaż relaksacyjny – 60 min (170 zł)</option>
+            </select>
+            <textarea id="bfNotes" placeholder="Uwagi (opcjonalnie)"></textarea>
+            <p class="booking-error" id="bookingError" style="display:none;"></p>
+            <button class="btn btn-primary full-width" id="confirmBtn">Zarezerwuj termin</button>
+          </div>
+          <div class="booking-success" id="bookingSuccess" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── NOCLEG ─── -->
+  <section class="section nocleg" id="nocleg">
+    <div class="container">
+      <div class="nocleg-inner">
+        <div class="nocleg-gallery">
+          <div class="nocleg-img-main">
+            <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1000&q=80" alt="Nowina Tajni Haus – widok" loading="lazy" />
+          </div>
+          <div class="nocleg-img-grid">
+            <img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&q=80" alt="Wnętrze" loading="lazy" />
+            <img src="https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=600&q=80" alt="Otoczenie" loading="lazy" />
+            <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&q=80" alt="Sypialnia" loading="lazy" />
+            <img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80" alt="Taras" loading="lazy" />
+          </div>
+        </div>
+        <div class="nocleg-info">
+          <span class="label">Pobyt</span>
+          <h2>Nowina Tajni Haus</h2>
+          <p class="nocleg-tagline">Ukryta chata w sercu natury — Twoja prywatna przestrzeń wyciszenia</p>
+          <p>Szukasz miejsca, gdzie czas zwalnia? Nowina Tajni Haus to wyjątkowy dom do wynajęcia otoczony lasem i ciszą. Idealne miejsce na regenerację po masażu, romantyczny weekend lub solo retreat w zgodzie z naturą.</p>
+          <ul class="nocleg-features">
+            <li>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              Prywatny dom — tylko dla Ciebie
+            </li>
+            <li>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              Możliwość zamówienia masażu na miejscu
+            </li>
+            <li>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Do 4 gości
+            </li>
+            <li>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-10"/></svg>
+              Naturalne otoczenie, pełna prywatność
+            </li>
+            <li>
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/></svg>
+              Blisko natury, z dala od zgiełku
+            </li>
+          </ul>
+          <div class="nocleg-combo">
+            <div class="combo-badge">🌿 Pakiet Odnowina</div>
+            <p>Zarezerwuj nocleg + masaż shiatsu i zaoszczędź 10% na zabiegu.</p>
+          </div>
+          <a href="https://www.airbnb.com/rooms/45204953" target="_blank" rel="noopener" class="btn btn-primary nocleg-btn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Zobacz na Airbnb →
+          </a>
+          <p class="airbnb-note">Rezerwacja przez platformę Airbnb — bezpieczna płatność i ochrona gości.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SKLEP ─── -->
+  <section class="section sklep" id="sklep">
+    <div class="container">
+      <span class="label center">Sklep</span>
+      <h2 class="center">Ekologiczne Kosmetyki</h2>
+      <p class="section-desc center">Wysyłka do całej Polski przez InPost Paczkomat®. Zamówienia realizujemy w 1–2 dni robocze.</p>
+      <div class="product-grid">
+
+        <div class="product-card">
+          <div class="product-img">
+            <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=600&q=80" alt="Olejek do masażu" loading="lazy" />
+            <span class="product-badge">Bestseller</span>
+          </div>
+          <div class="product-info">
+            <h4>Olejek do masażu – lawenda & eukaliptus</h4>
+            <p>100% naturalne składniki, certyfikat Ecocert. 100 ml</p>
+            <div class="product-footer">
+              <span class="product-price">49 zł</span>
+              <button class="btn btn-sm" onclick="addToCart(this, 'Olejek lawenda', 49)">Do koszyka</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img">
+            <img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&q=80" alt="Krem do ciała" loading="lazy" />
+          </div>
+          <div class="product-info">
+            <h4>Krem do ciała – masło shea & roza</h4>
+            <p>Intensywne nawilżenie, naturalne składniki aktywne. 200 ml</p>
+            <div class="product-footer">
+              <span class="product-price">65 zł</span>
+              <button class="btn btn-sm" onclick="addToCart(this, 'Krem shea & róża', 65)">Do koszyka</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img">
+            <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&q=80" alt="Serum do twarzy" loading="lazy" />
+          </div>
+          <div class="product-info">
+            <h4>Serum regenerujące – bakuchiol & argan</h4>
+            <p>Naturalna alternatywa dla retinolu. 30 ml</p>
+            <div class="product-footer">
+              <span class="product-price">89 zł</span>
+              <button class="btn btn-sm" onclick="addToCart(this, 'Serum bakuchiol', 89)">Do koszyka</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-card">
+          <div class="product-img">
+            <img src="https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=600&q=80" alt="Scrub do ciała" loading="lazy" />
+          </div>
+          <div class="product-info">
+            <h4>Peeling kawowy do ciała</h4>
+            <p>Ziarnistość kawy arabica + olej kokosowy. 250 g</p>
+            <div class="product-footer">
+              <span class="product-price">42 zł</span>
+              <button class="btn btn-sm" onclick="addToCart(this, 'Peeling kawowy', 42)">Do koszyka</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── INPOST BADGE ─── -->
+  <div class="inpost-bar">
+    <div class="container inpost-inner">
+      <img src="static/InPost_logotype_2024_black_bg.svg" alt="InPost" class="inpost-logo" />
+      <span>Bezpłatna dostawa przy zamówieniu powyżej 150 zł &nbsp;·&nbsp; Paczkomat 24/7</span>
+    </div>
+  </div>
+
+  <!-- ─── KONTAKT ─── -->
+  <section class="section kontakt" id="kontakt">
+    <div class="container two-col">
+      <div class="text-block">
+        <span class="label">Kontakt</span>
+        <p><br />ul. Odnowina 12<br />Odnowina, 00-001</p>
+        <p>📞 <a href="tel:+48000000000">+48 000 000 000</a></p>
+        <p>✉️ <a href="mailto:hello@odnowina.pl">hello@odnowina.pl</a></p>
+        <div class="social-links">
+          <a href="https://www.instagram.com/odnowina/" aria-label="Instagram">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://www.facebook.com/odnowina" aria-label="Facebook">
+            <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="map-block">
+        <!-- Replace with real Google Maps embed -->
+        <div class="map-placeholder">
+          <iframe
+            src="https://www.openstreetmap.org/export/embed.html?bbox=21.0,52.2,21.1,52.3&layer=mapnik"
+            width="100%" height="100%" style="border:0;" loading="lazy" title="Mapa"></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a href="#hero" class="logo">odnowina</a>
+        <p>Shiatsu & Kosmetyki Ekologiczne<br />odnowina.pl</p>
+      </div>
+      <div class="footer-links">
+        <h5>Nawigacja</h5>
+        <ul>
+          <li><a href="#o-nas">O mnie</a></li>
+          <li><a href="#masaz">Masaż</a></li>
+          <li><a href="#cennik">Cennik</a></li>
+          <li><a href="#nocleg">Nocleg</a></li>
+          <li><a href="#sklep">Sklep</a></li>
+          <li><a href="#rezerwacja">Rezerwacja</a></li>
+          <li><a href="#kontakt">Kontakt</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h5>Informacje</h5>
+        <ul>
+          <li><a href="#">Polityka prywatności</a></li>
+          <li><a href="#">Regulamin sklepu</a></li>
+          <li><a href="#">Dostawa InPost</a></li>
+          <li><a href="#">Zwroty i reklamacje</a></li>
+        </ul>
+      </div>
+      <div class="footer-newsletter">
+        <h5>Newsletter</h5>
+        <p>Porady, nowe zabiegi i oferty specjalne prosto na Twój e-mail.</p>
+        <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+          <input type="email" placeholder="Twój e-mail" required />
+          <button type="submit" class="btn btn-primary">Zapisz →</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Odnowina. Wszelkie prawa zastrzeżone.</p>
+    </div>
+  </footer>
+
+  <!-- ─── CART DRAWER ─── -->
+  <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h3>Koszyk</h3>
+      <button onclick="toggleCart()" aria-label="Zamknij koszyk">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <p class="empty-cart">Koszyk jest pusty</p>
+    </div>
+    <div class="cart-footer" id="cartFooter" style="display:none;">
+      <div class="cart-total">Razem: <strong id="cartTotal">0 zł</strong></div>
+      <button class="btn btn-primary full-width" onclick="openCheckout()">Przejdź do kasy →</button>
+    </div>
+  </div>
+
+  <!-- ─── CHECKOUT MODAL ─── -->
+  <div class="checkout-overlay" id="checkoutOverlay" onclick="closeCheckout()"></div>
+  <div class="checkout-modal" id="checkoutModal">
+    <div class="checkout-header">
+      <h3>Dokończ zamówienie</h3>
+      <button onclick="closeCheckout()" aria-label="Zamknij">✕</button>
+    </div>
+    <div class="checkout-body">
+      <div class="checkout-section">
+        <h4>Dane kontaktowe</h4>
+        <input type="text" id="coName" placeholder="Imię i nazwisko" required />
+        <input type="email" id="coEmail" placeholder="E-mail" required />
+        <input type="tel" id="coPhone" placeholder="Telefon" required />
+      </div>
+
+      <div class="checkout-section">
+        <h4>Dostawa — InPost Paczkomat</h4>
+        <div class="locker-picker">
+          <div class="locker-selected" id="lockerSelected">Nie wybrano paczkomatu</div>
+          <button type="button" class="btn btn-outline" onclick="openLockerPicker()">📍 Wybierz paczkomat</button>
+        </div>
+      </div>
+
+      <div class="checkout-section">
+        <h4>Podsumowanie</h4>
+        <div id="checkoutSummary" class="checkout-summary"></div>
+      </div>
+
+      <p class="checkout-error" id="checkoutError" style="display:none;"></p>
+
+      <button class="btn btn-primary full-width" id="payBtn" onclick="startPayment()">Zapłać kartą — HotPay →</button>
+      <p class="checkout-note">Płatność realizowana bezpiecznie przez HotPay. Zostaniesz przekierowany do formularza płatności kartą.</p>
+    </div>
+  </div>
+
+  <!-- ─── INPOST LOCKER PICKER MODAL ─── -->
+  <div class="locker-overlay" id="lockerOverlay" onclick="closeLockerPicker()"></div>
+  <div class="locker-modal" id="lockerModal">
+    <div class="checkout-header">
+      <h3>Wybierz paczkomat InPost</h3>
+      <button onclick="closeLockerPicker()" aria-label="Zamknij">✕</button>
+    </div>
+    <div class="locker-modal-body" id="geowidgetContainer"></div>
+  </div>
+
+  <!-- Cart button -->
+  <button class="cart-fab" id="cartFab" onclick="toggleCart()" aria-label="Koszyk">
+    <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    <span class="cart-count" id="cartCount" style="display:none;">0</span>
+  </button>
+
+  <script src="app.js"></script>
+</body>
+</html>

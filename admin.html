@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Panel admina – Odnowina</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    body { background: var(--cream); min-height: 100vh; }
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+    .admin-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+    .admin-header h1 { font-family: var(--font-serif); font-size: 2rem; }
+    .admin-logout { font-size: .85rem; color: var(--mid); cursor: pointer; text-decoration: underline; }
+
+    .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .login-card { max-width: 380px; width: 100%; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 40px 32px; text-align: center; }
+    .login-card h1 { font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: 20px; }
+    .login-card input { width: 100%; padding: 12px 14px; border: 1px solid var(--linen); border-radius: var(--radius-sm); font-family: var(--font-sans); font-size: .95rem; margin-bottom: 14px; }
+    .login-card .btn { width: 100%; }
+    .login-error { color: #B3432C; font-size: .85rem; margin-top: 4px; min-height: 1.2em; }
+
+    .admin-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .admin-tab { padding: 10px 20px; border-radius: var(--radius-sm); background: var(--white); color: var(--charcoal); cursor: pointer; font-size: .9rem; border: 1px solid var(--linen); }
+    .admin-tab.active { background: var(--sage-dark); color: var(--white); border-color: var(--sage-dark); }
+
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    .admin-table-wrap { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow-x: auto; }
+    table.admin-table { width: 100%; border-collapse: collapse; font-size: .88rem; min-width: 760px; }
+    table.admin-table th, table.admin-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--linen); vertical-align: top; }
+    table.admin-table th { background: var(--cream); font-weight: 500; color: var(--mid); font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+    table.admin-table tr:last-child td { border-bottom: none; }
+
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .75rem; font-weight: 500; }
+    .status-confirmed, .status-paid { background: #E4EEE0; color: var(--sage-dark); }
+    .status-pending { background: #F5EBD6; color: #9A7D2E; }
+    .status-cancelled { background: #F5E0DC; color: #B3432C; }
+    .status-shipped { background: #DCE8F0; color: #3A6B8A; }
+
+    .admin-empty { padding: 40px; text-align: center; color: var(--mid); }
+    .admin-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .admin-actions button { font-size: .78rem; padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--linen); background: var(--white); cursor: pointer; }
+    .admin-actions button:hover { background: var(--cream); }
+    .admin-actions button.danger { color: #B3432C; border-color: #E7C2B8; }
+    .admin-refresh { font-size: .85rem; color: var(--mid); cursor: pointer; text-decoration: underline; margin-bottom: 16px; display: inline-block; }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrap" id="loginWrap">
+    <div class="login-card">
+      <h1>Panel admina — Odnowina</h1>
+      <input type="password" id="loginPassword" placeholder="Hasło" />
+      <button class="btn btn-primary" id="loginBtn">Zaloguj</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+  </div>
+
+  <div class="admin-wrap" id="adminWrap" style="display:none;">
+    <div class="admin-header">
+      <h1>Panel admina</h1>
+      <span class="admin-logout" id="logoutBtn">Wyloguj</span>
+    </div>
+
+    <div class="admin-tabs">
+      <div class="admin-tab active" data-tab="bookings">Rezerwacje</div>
+      <div class="admin-tab" data-tab="orders">Zamówienia</div>
+    </div>
+
+    <span class="admin-refresh" id="refreshBtn">↻ Odśwież</span>
+
+    <div class="admin-panel active" id="panelBookings">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Data / godzina</th>
+              <th>Lokalizacja</th>
+              <th>Zabieg</th>
+              <th>Klient</th>
+              <th>Uwagi</th>
+              <th>Status</th>
+              <th>Akcja</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsBody"></tbody>
+        </table>
+        <div class="admin-empty" id="bookingsEmpty" style="display:none;">Brak rezerwacji.</div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="panelOrders">
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Klient</th>
+              <th>Produkty</th>
+              <th>Paczkomat</th>
+              <th>Kwota</th>
+              <th>Status</th>
+              <th>Akcja</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+        <div class="admin-empty" id="ordersEmpty" style="display:none;">Brak zamówień.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'odnowina_admin_key';
+    const STATUS_LABELS = {
+      confirmed: 'Potwierdzona', cancelled: 'Odwołana',
+      pending: 'Oczekuje', paid: 'Opłacone', shipped: 'Wysłane',
+    };
+    const LOCATION_NAMES = { ziebice: 'Ziębice', wroclaw: 'Wrocław' };
+
+    function adminKey() { return sessionStorage.getItem(STORAGE_KEY) || ''; }
+
+    async function adminFetch(url, options = {}) {
+      const response = await fetch(url, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': adminKey(), ...(options.headers || {}) },
+      });
+      if (response.status === 401) {
+        sessionStorage.removeItem(STORAGE_KEY);
+        showLogin('Sesja wygasła. Zaloguj się ponownie.');
+        throw new Error('unauthorized');
+      }
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error((data && data.error) || 'Błąd serwera.');
+      return data;
+    }
+
+    function showLogin(error) {
+      document.getElementById('loginWrap').style.display = 'flex';
+      document.getElementById('adminWrap').style.display = 'none';
+      document.getElementById('loginError').textContent = error || '';
+    }
+
+    function showAdmin() {
+      document.getElementById('loginWrap').style.display = 'none';
+      document.getElementById('adminWrap').style.display = 'block';
+      loadAll();
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const password = document.getElementById('loginPassword').value;
+      sessionStorage.setItem(STORAGE_KEY, password);
+      try {
+        await adminFetch('/api/admin/login', { method: 'POST' });
+        showAdmin();
+      } catch (err) {
+        sessionStorage.removeItem(STORAGE_KEY);
+        document.getElementById('loginError').textContent = err.message || 'Nieprawidłowe hasło.';
+      }
+    });
+    document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('loginBtn').click();
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      sessionStorage.removeItem(STORAGE_KEY);
+      showLogin();
+    });
+    document.getElementById('refreshBtn').addEventListener('click', loadAll);
+
+    document.querySelectorAll('.admin-tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.admin-tab').forEach((t) => t.classList.remove('active'));
+        document.querySelectorAll('.admin-panel').forEach((p) => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel' + tab.dataset.tab[0].toUpperCase() + tab.dataset.tab.slice(1)).classList.add('active');
+      });
+    });
+
+    function escapeHtml(str) {
+      return String(str ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function statusBadge(status) {
+      return `<span class="status-badge status-${escapeHtml(status)}">${escapeHtml(STATUS_LABELS[status] || status)}</span>`;
+    }
+
+    async function loadBookings() {
+      const data = await adminFetch('/api/admin/bookings');
+      const bookings = (data.bookings || []).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+      const body = document.getElementById('bookingsBody');
+      document.getElementById('bookingsEmpty').style.display = bookings.length ? 'none' : 'block';
+      body.innerHTML = bookings.map((b) => `
+        <tr>
+          <td>${escapeHtml(b.date)}<br>${escapeHtml(b.time)}</td>
+          <td>${escapeHtml(LOCATION_NAMES[b.location] || b.location)}</td>
+          <td>${escapeHtml(b.service)}</td>
+          <td>${escapeHtml(b.customer.name)}<br><small>${escapeHtml(b.customer.email)} · ${escapeHtml(b.customer.phone)}</small></td>
+          <td>${escapeHtml(b.notes) || '—'}</td>
+          <td>${statusBadge(b.status)}</td>
+          <td class="admin-actions">
+            ${b.status === 'confirmed' ? `<button class="danger" data-cancel-booking="${escapeHtml(b.bookingId)}">Odwołaj</button>` : ''}
+          </td>
+        </tr>
+      `).join('');
+
+      body.querySelectorAll('[data-cancel-booking]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Odwołać tę rezerwację?')) return;
+          btn.disabled = true;
+          try {
+            await adminFetch('/api/admin/bookings', {
+              method: 'POST',
+              body: JSON.stringify({ action: 'cancel', bookingId: btn.dataset.cancelBooking }),
+            });
+            loadBookings();
+          } catch (err) {
+            alert(err.message);
+            btn.disabled = false;
+          }
+        });
+      });
+    }
+
+    async function loadOrders() {
+      const data = await adminFetch('/api/admin/orders');
+      const orders = (data.orders || []).sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      const body = document.getElementById('ordersBody');
+      document.getElementById('ordersEmpty').style.display = orders.length ? 'none' : 'block';
+      body.innerHTML = orders.map((o) => {
+        const itemsLabel = o.items.map((i) => `${i.name} ×${i.qty}`).join(', ');
+        const lockerLabel = o.locker ? `${o.locker.name}${o.locker.address ? ' – ' + o.locker.address : ''}` : '—';
+        const amountZl = (o.amountGr / 100).toFixed(2) + ' zł';
+        const actions = [];
+        if (o.status === 'paid') actions.push(`<button data-set-status="${escapeHtml(o.sessionId)}:shipped">Oznacz jako wysłane</button>`);
+        if (o.status === 'pending' || o.status === 'paid') actions.push(`<button class="danger" data-set-status="${escapeHtml(o.sessionId)}:cancelled">Odwołaj</button>`);
+        return `
+        <tr>
+          <td>${escapeHtml((o.createdAt || '').replace('T', ' ').slice(0, 16))}</td>
+          <td>${escapeHtml(o.customer.name)}<br><small>${escapeHtml(o.customer.email)} · ${escapeHtml(o.customer.phone)}</small></td>
+          <td>${escapeHtml(itemsLabel)}</td>
+          <td>${escapeHtml(lockerLabel)}</td>
+          <td>${escapeHtml(amountZl)}</td>
+          <td>${statusBadge(o.status)}</td>
+          <td class="admin-actions">${actions.join('')}</td>
+        </tr>
+      `; }).join('');
+
+      body.querySelectorAll('[data-set-status]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const [sessionId, status] = btn.dataset.setStatus.split(':');
+          if (status === 'cancelled' && !confirm('Odwołać to zamówienie?')) return;
+          btn.disabled = true;
+          try {
+            await adminFetch('/api/admin/orders', {
+              method: 'POST',
+              body: JSON.stringify({ action: 'status', sessionId, status }),
+            });
+            loadOrders();
+          } catch (err) {
+            alert(err.message);
+            btn.disabled = false;
+          }
+        });
+      });
+    }
+
+    function loadAll() {
+      loadBookings().catch((err) => { if (err.message !== 'unauthorized') console.error(err); });
+      loadOrders().catch((err) => { if (err.message !== 'unauthorized') console.error(err); });
+    }
+
+    if (adminKey()) showAdmin();
+  </script>
+</body>
+</html>
